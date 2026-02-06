@@ -1,0 +1,666 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  font-family: 'Press Start 2P', monospace;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+}
+
+body {
+  background: #2b1629;
+  min-height: 100vh;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  image-rendering: pixelated;
+  position: relative;
+}
+
+/* Scanline overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.05) 2px,
+    rgba(0, 0, 0, 0.05) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ---- Layout ---- */
+.container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid #ff7eb3;
+  box-shadow: 0 0 20px rgba(255, 126, 179, 0.15), inset 0 0 40px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+/* ---- Back Button ---- */
+.back-button {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding: 8px 20px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #ff7eb3;
+  background: transparent;
+  border: 2px solid #ff7eb3;
+  border-radius: 0;
+  cursor: pointer;
+  text-transform: uppercase;
+  z-index: 300;
+  box-shadow: 0 0 6px rgba(255, 126, 179, 0.15);
+  transition: background 0.05s step-end, box-shadow 0.05s step-end;
+}
+
+.back-button:hover {
+  background: rgba(255, 126, 179, 0.1);
+  box-shadow: 0 0 14px rgba(255, 126, 179, 0.3);
+}
+
+/* ---- Dudu ---- */
+.dudu-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s step-end, opacity 0.3s step-end;
+}
+
+.dudu-image {
+  width: 300px;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+  background: transparent;
+  image-rendering: pixelated;
+}
+
+/* Ensure all images preserve transparency */
+.dudu-image,
+.bubu-image {
+  background: transparent !important;
+  image-rendering: pixelated;
+}
+
+.dudu-image img,
+.bubu-image img {
+  background: transparent !important;
+}
+
+.dudu-image,
+.bubu-image {
+  isolation: isolate;
+}
+
+.dudu-wrapper,
+.drop-zone {
+  background: transparent !important;
+}
+
+/* ---- Drop Zone ---- */
+.drop-zone {
+  width: 250px;
+  height: 250px;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: box-shadow 0.1s step-end;
+  background: transparent !important;
+  z-index: 1;
+  border: 3px dashed rgba(255, 126, 179, 0.2);
+}
+
+.drop-zone.drag-over {
+  border-color: #ff7eb3;
+  box-shadow: 0 0 16px rgba(255, 126, 179, 0.4);
+}
+
+/* ---- Food Items ---- */
+.food-item {
+  position: absolute;
+  font-size: 40px;
+  cursor: grab;
+  user-select: none;
+  z-index: 100;
+  filter: drop-shadow(0 0 4px rgba(255, 182, 212, 0.5));
+  transition: none;
+}
+
+.food-item:active {
+  cursor: grabbing;
+  filter: drop-shadow(0 0 8px rgba(255, 182, 212, 0.9));
+}
+
+.food-item.dragging {
+  opacity: 0.5;
+}
+
+/* ---- Bubu ---- */
+.bubu-container {
+  position: absolute;
+  cursor: grab;
+  user-select: none;
+  z-index: 100;
+  transition: none;
+}
+
+.bubu-container:active {
+  cursor: grabbing;
+}
+
+.bubu-container.dragging {
+  opacity: 0.5;
+}
+
+.bubu-image {
+  width: 60px;
+  height: auto;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  image-rendering: pixelated;
+}
+
+/* ---- Nom Text ---- */
+.nom-text {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: bold;
+  color: #ff7eb3;
+  text-shadow: 0 0 10px #ff7eb3, 0 0 20px rgba(255, 126, 179, 0.6);
+  pointer-events: none;
+  z-index: 200;
+  animation: nomAnimation 1s steps(6) forwards;
+  text-transform: uppercase;
+}
+
+@keyframes nomAnimation {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.3);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -60%) scale(1);
+  }
+}
+
+/* ---- Eating State ---- */
+.message-container {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  text-align: center;
+  z-index: 200;
+  animation: gentleFadeIn 0.8s ease-out forwards;
+}
+
+@keyframes gentleFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.message-text {
+  font-size: 18px;
+  color: #ffb6d4;
+  text-shadow: 0 0 8px #ff7eb3, 0 0 20px rgba(255, 126, 179, 0.5);
+  line-height: 1.8;
+  text-transform: uppercase;
+}
+
+/* ---- Proposal State ---- */
+.proposal-container {
+  position: absolute;
+  bottom: 6%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  text-align: center;
+  z-index: 200;
+  animation: gentleFadeIn 0.8s ease-out forwards;
+  width: 90%;
+  max-width: 700px;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+.proposal-text {
+  font-size: 22px;
+  color: #ffb6d4;
+  text-shadow: 0 0 10px #ff7eb3, 0 0 30px rgba(255, 126, 179, 0.5), 0 0 50px rgba(255, 126, 179, 0.3);
+  margin-top: 30px;
+  animation: softPulse 2.5s ease-in-out infinite;
+  text-transform: uppercase;
+  line-height: 1.8;
+}
+
+@keyframes softPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+@keyframes pixelPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.state-transition {
+  animation: fadeTransition 0.5s steps(4);
+}
+
+@keyframes fadeTransition {
+  0% { opacity: 0; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* ======== MENU SCREEN ======== */
+.menu-screen {
+  flex-direction: column;
+}
+
+.menu-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  animation: menuFadeIn 0.6s steps(4) forwards;
+  width: 100%;
+  text-align: center;
+  margin-top: -40px;
+}
+
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.menu-dudu {
+  width: 180px;
+  height: auto;
+  image-rendering: pixelated;
+  animation: pixelBounce 1.2s steps(4) infinite;
+}
+
+@keyframes pixelBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.menu-title {
+  font-size: 36px;
+  color: #ff7eb3;
+  text-shadow: 0 0 10px #ff7eb3, 0 0 30px rgba(255, 126, 179, 0.4);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  width: 280px;
+}
+
+/* Pixel-style buttons */
+.play-button {
+  padding: 16px 0;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 20px;
+  color: #2b1629;
+  background: #ff7eb3;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  text-transform: uppercase;
+  box-shadow:
+    4px 4px 0 #b3577d,
+    0 0 16px rgba(255, 126, 179, 0.3);
+  transition: transform 0.05s step-end, box-shadow 0.05s step-end;
+}
+
+.play-button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow:
+    6px 6px 0 #b3577d,
+    0 0 24px rgba(255, 126, 179, 0.5);
+}
+
+.play-button:active {
+  transform: translate(2px, 2px);
+  box-shadow:
+    2px 2px 0 #b3577d,
+    0 0 8px rgba(255, 126, 179, 0.3);
+}
+
+.secondary-button {
+  padding: 12px 0;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  color: #ff7eb3;
+  background: transparent;
+  border: 3px solid #ff7eb3;
+  border-radius: 0;
+  cursor: pointer;
+  text-transform: uppercase;
+  box-shadow: 0 0 8px rgba(255, 126, 179, 0.15);
+  transition: background 0.05s step-end, box-shadow 0.05s step-end;
+}
+
+.secondary-button:hover {
+  background: rgba(255, 126, 179, 0.1);
+  box-shadow: 0 0 16px rgba(255, 126, 179, 0.3);
+}
+
+.hint-button {
+  padding: 10px 28px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #ffd1e3;
+  background: transparent;
+  border: 2px solid #ffd1e3;
+  border-radius: 0;
+  cursor: pointer;
+  text-transform: uppercase;
+  box-shadow: 0 0 6px rgba(255, 209, 227, 0.15);
+  transition: background 0.05s step-end, box-shadow 0.05s step-end;
+  margin-bottom: 0;
+}
+
+.hint-button:hover {
+  background: rgba(255, 209, 227, 0.1);
+  box-shadow: 0 0 14px rgba(255, 209, 227, 0.3);
+}
+
+/* ======== MODAL ======== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  animation: fadeIn 0.2s steps(3);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: #2b1629;
+  border: 3px solid #ff7eb3;
+  border-radius: 0;
+  padding: 32px 36px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(255, 126, 179, 0.2), 8px 8px 0 rgba(0, 0, 0, 0.5);
+  animation: modalSlideIn 0.3s steps(4);
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-title {
+  font-size: 18px;
+  color: #ff7eb3;
+  text-shadow: 0 0 8px rgba(255, 126, 179, 0.6);
+  margin-bottom: 24px;
+  text-transform: uppercase;
+}
+
+.modal-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.modal-list li {
+  font-size: 11px;
+  color: #ffd1e3;
+  line-height: 1.8;
+}
+
+.modal-list li::before {
+  content: '> ';
+  color: #ff7eb3;
+}
+
+.modal-hint-text {
+  font-size: 13px;
+  color: #ffd1e3;
+  text-shadow: 0 0 6px rgba(255, 209, 227, 0.4);
+  margin-bottom: 0;
+  line-height: 2;
+}
+
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.modal-close {
+  padding: 12px 36px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  color: #2b1629;
+  background: #ff7eb3;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 #b3577d;
+  transition: transform 0.05s step-end, box-shadow 0.05s step-end;
+}
+
+.modal-close:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 #b3577d;
+}
+
+.modal-close:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #b3577d;
+}
+
+/* ======== RESPONSIVE ======== */
+@media (max-width: 768px) {
+  .dudu-image {
+    width: 200px;
+  }
+
+  .drop-zone {
+    width: 200px;
+    height: 200px;
+  }
+
+  .food-item {
+    font-size: 32px;
+  }
+
+  .bubu-image {
+    width: 40px;
+  }
+
+  .nom-text {
+    font-size: 18px;
+  }
+
+  .message-text {
+    font-size: 13px;
+  }
+
+  .proposal-text {
+    font-size: 16px;
+  }
+
+  .menu-title {
+    font-size: 24px;
+  }
+
+  .menu-dudu {
+    width: 140px;
+  }
+
+  .play-button {
+    padding: 14px 40px;
+    font-size: 16px;
+  }
+
+  .secondary-button {
+    padding: 10px 28px;
+    font-size: 10px;
+  }
+
+  .hint-button {
+    padding: 8px 24px;
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dudu-image {
+    width: 150px;
+  }
+
+  .drop-zone {
+    width: 160px;
+    height: 160px;
+  }
+
+  .food-item {
+    font-size: 26px;
+  }
+
+  .bubu-image {
+    width: 30px;
+  }
+
+  .nom-text {
+    font-size: 14px;
+  }
+
+  .message-text {
+    font-size: 10px;
+  }
+
+  .proposal-text {
+    font-size: 12px;
+  }
+
+  .menu-title {
+    font-size: 18px;
+  }
+
+  .menu-dudu {
+    width: 110px;
+  }
+
+  .play-button {
+    padding: 12px 32px;
+    font-size: 14px;
+  }
+
+  .secondary-button {
+    padding: 8px 24px;
+    font-size: 9px;
+  }
+
+  .hint-button {
+    padding: 7px 20px;
+    font-size: 8px;
+  }
+
+  .modal {
+    padding: 24px 20px;
+  }
+
+  .modal-title {
+    font-size: 14px;
+  }
+
+  .modal-list li {
+    font-size: 9px;
+  }
+
+  .modal-hint-text {
+    font-size: 11px;
+  }
+
+  .modal-close {
+    font-size: 10px;
+    padding: 10px 28px;
+  }
+}
