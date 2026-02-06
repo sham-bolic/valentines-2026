@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Image from 'next/image'
 
-type GameState = 'menu' | 'hungry' | 'eating' | 'proposal'
+type GameState = 'menu' | 'hungry' | 'eating' | 'proposal' | 'celebration'
 
 const FOOD_EMOJIS = ['🍎', '🍕', '🍔', '🍰', '🍓', '🥐', '🍩', '🍪', '🥨', '🧁']
 
@@ -305,6 +305,25 @@ export default function Home() {
     )
   }
 
+  if (state === 'celebration') {
+    return (
+      <main className="container celebration-screen">
+        <div className="celebration-content">
+          <div className="celebration-text">Yay! See you on Valentine&apos;s Day! 💕</div>
+          <div className="celebration-gif">
+            <iframe
+              src="https://tenor.com/embed/24343880"
+              width="300"
+              height="300"
+              frameBorder="0"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main 
       ref={containerRef}
@@ -336,6 +355,45 @@ export default function Home() {
             style={{ background: 'transparent' }}
           />
         </div>
+
+        {/* Eating state message - positioned relative to Dudu */}
+        {state === 'eating' && (
+          <div className="message-container">
+            <div className="message-text">
+              Congrats! You found what Dudu wanted to eat most!
+            </div>
+          </div>
+        )}
+
+        {/* Proposal state - positioned relative to Dudu */}
+        {state === 'proposal' && (
+          <>
+            <div className="proposal-container">
+              <div className="proposal-text">
+                Will you be the Bubu to my Dudu, and be my Valentine? 💕
+              </div>
+            </div>
+            <button className="proposal-btn proposal-yes" onClick={() => setState('celebration')}>
+              Yes
+            </button>
+            <button className="proposal-btn proposal-no" onClick={(e) => {
+              const btn = e.currentTarget
+              const clicks = parseInt(btn.dataset.clicks || '0') + 1
+              btn.dataset.clicks = String(clicks)
+              if (clicks >= 10) {
+                btn.style.display = 'none'
+                return
+              }
+              const currentScale = parseFloat(btn.dataset.scale || '1')
+              const newScale = currentScale * 0.7
+              btn.dataset.scale = String(newScale)
+              btn.style.fontSize = `${16 * newScale}px`
+              btn.style.padding = `${14 * newScale}px ${32 * newScale}px`
+            }}>
+              No
+            </button>
+          </>
+        )}
       </div>
 
       {/* Food items - positioned relative to the full container */}
@@ -395,23 +453,8 @@ export default function Home() {
       {/* "nom nom nom" text animation */}
       {showNomText && <div className="nom-text">nom nom nom</div>}
 
-      {/* Eating state message */}
-      {state === 'eating' && (
-        <div className="message-container">
-          <div className="message-text">
-            Congrats! You found what Dudu wanted to eat most!
-          </div>
-        </div>
-      )}
 
-      {/* Proposal state */}
-      {state === 'proposal' && (
-        <div className="proposal-container">
-          <div className="proposal-text">
-            Will you be the Bubu to my Dudu, and be my Valentine? 💕
-          </div>
-        </div>
-      )}
+
     </main>
   )
 }

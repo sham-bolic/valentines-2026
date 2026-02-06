@@ -227,12 +227,14 @@ body::after {
 /* ---- Eating State ---- */
 .message-container {
   position: absolute;
-  top: 15%;
+  top: 100%;
   left: 50%;
-  transform: translate(-50%, 0);
+  transform: translate(-50%, 16px);
   text-align: center;
   z-index: 200;
   animation: gentleFadeIn 0.8s ease-out forwards;
+  width: 700px;
+  max-width: 90vw;
 }
 
 @keyframes gentleFadeIn {
@@ -251,14 +253,14 @@ body::after {
 /* ---- Proposal State ---- */
 .proposal-container {
   position: absolute;
-  bottom: 6%;
+  top: 100%;
   left: 50%;
-  transform: translate(-50%, 0);
+  transform: translate(-50%, 16px);
   text-align: center;
   z-index: 200;
   animation: gentleFadeIn 0.8s ease-out forwards;
-  width: 90%;
-  max-width: 700px;
+  width: 700px;
+  max-width: 90vw;
 }
 
 @keyframes fadeInScale {
@@ -287,6 +289,55 @@ body::after {
   50% { opacity: 0.85; }
 }
 
+/* ---- Proposal Buttons ---- */
+.proposal-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 14px 32px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 16px;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  text-transform: uppercase;
+  z-index: 200;
+  animation: gentleFadeIn 1s ease-out forwards;
+  transition: transform 0.05s step-end, box-shadow 0.05s step-end;
+}
+
+.proposal-yes {
+  right: 100%;
+  margin-right: 40px;
+  color: #2b1629;
+  background: #ff7eb3;
+  box-shadow: 4px 4px 0 #b3577d, 0 0 16px rgba(255, 126, 179, 0.3);
+}
+
+.proposal-yes:hover {
+  transform: translateY(-50%) translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #b3577d, 0 0 24px rgba(255, 126, 179, 0.5);
+}
+
+.proposal-yes:active {
+  transform: translateY(-50%) translate(2px, 2px);
+  box-shadow: 2px 2px 0 #b3577d;
+}
+
+.proposal-no {
+  left: 100%;
+  margin-left: 40px;
+  color: #ffd1e3;
+  background: transparent;
+  border: 2px solid #ffd1e3;
+  box-shadow: 0 0 6px rgba(255, 209, 227, 0.15);
+}
+
+.proposal-no:hover {
+  background: rgba(255, 209, 227, 0.1);
+  box-shadow: 0 0 14px rgba(255, 209, 227, 0.3);
+}
+
 @keyframes pixelPulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
@@ -300,6 +351,41 @@ body::after {
   0% { opacity: 0; }
   50% { opacity: 0.5; }
   100% { opacity: 1; }
+}
+
+/* ======== CELEBRATION SCREEN ======== */
+.celebration-screen {
+  flex-direction: column;
+}
+
+.celebration-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  animation: gentleFadeIn 1s ease-out forwards;
+}
+
+.celebration-text {
+  font-size: 22px;
+  color: #ff7eb3;
+  text-shadow: 0 0 10px #ff7eb3, 0 0 30px rgba(255, 126, 179, 0.5);
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.8;
+  animation: softPulse 2.5s ease-in-out infinite;
+}
+
+.celebration-gif {
+  border-radius: 0;
+  overflow: hidden;
+  border: 3px solid #ff7eb3;
+  box-shadow: 0 0 20px rgba(255, 126, 179, 0.3);
+}
+
+.celebration-gif iframe {
+  display: block;
 }
 
 /* ======== MENU SCREEN ======== */
